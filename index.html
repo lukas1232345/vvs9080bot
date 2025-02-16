@@ -4,21 +4,355 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>비바스 챗봇</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* 기본 배경 및 레이아웃 */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #36393F;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .chat-container {
+      width: 400px;
+      max-height: 600px;
+      background-color: #2F3136;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    .chat-box {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: #36393F;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    /* 메시지 버블 공통 스타일 */
+    .message {
+      display: flex;
+      margin: 10px 0;
+      word-break: break-word;
+    }
+    /* 사용자 메시지 (오른쪽 정렬) */
+    .user-message {
+      justify-content: flex-end;
+    }
+    .user-message .message-content {
+      background-color: #7289DA;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 70%;
+    }
+    /* 비바스 봇 메시지 (왼쪽 정렬, 아바타 + 닉네임 + 텍스트) */
+    .bot-message {
+      justify-content: flex-start;
+    }
+    .bot-message .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    .bot-message .message-content {
+      background-color: #5865F2;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 70%;
+    }
+    .bot-message .nickname {
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #00B0F4;
+      font-size: 14px;
+    }
+    .bot-message .text {
+      font-size: 16px;
+    }
+    /* 입력창 스타일 */
+    .input-container {
+      display: flex;
+    }
+    .input-container input {
+      flex-grow: 1;
+      padding: 10px;
+      border-radius: 4px;
+      border: none;
+      margin-right: 8px;
+    }
+    .input-container button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      background-color: #7289DA;
+      color: white;
+      cursor: pointer;
+    }
+    .input-container button:hover {
+      background-color: #677BC4;
+    }
+  </style>
 </head>
 <body>
   <div class="chat-container">
     <div class="chat-box" id="chat-box"></div>
     <div class="input-container">
-      <input
-        type="text"
-        id="user-input"
-        placeholder="그만 물어봐 제발..."
-        onkeydown="if(event.key === 'Enter'){sendMessage()}"
-      />
+      <input type="text" id="user-input" placeholder="메시지를 입력하세요..." onkeydown="if(event.key === 'Enter'){sendMessage()}" />
       <button onclick="sendMessage()">전송</button>
     </div>
   </div>
-  <script src="script.js"></script>
+  <script>
+    // 비바스 봇의 200개 이상의 랜덤 응답 (총 200개)
+    const vivasResponses = [
+      "진짜 지겹네.",
+      "뭐 하자는 거야?",
+      "너 또 그거 묻냐?",
+      "미친 거 아냐?",
+      "그거 뭐 어쩌라는 거냐?",
+      "어휴, 짜증나.",
+      "하, 또 시작이네.",
+      "너 왜 이렇게 반복해?",
+      "그냥 알아서 해.",
+      "그게 뭐 대단한 일이라도 되는 줄 알아?",
+      "너 계속 이럴 거야?",
+      "대체 왜 이렇게 짜증나게 물어봐?",
+      "뭐가 그렇게 궁금한데?",
+      "정말 넌 끊임없이 묻는구나.",
+      "하, 또 그 말이냐.",
+      "왜 이렇게 잘 모르겠어?",
+      "그거 그냥 네가 해.",
+      "정신 차려라.",
+      "계속 물어보면 진짜 짜증난다.",
+      "아니, 그걸 왜 물어보는 거야?",
+      "뭐냐, 답답하게.",
+      "좀 더 똑똑하게 살아.",
+      "이해 못하겠어?",
+      "그건 내가 답할 일이 아니야.",
+      "그걸 왜 물어보는 거야?",
+      "알아서 해, 진짜.",
+      "혼자서 다 해결해봐.",
+      "왜 자꾸 물어보냐고?",
+      "그만 물어봐.",
+      "대답할 기분도 안 나.",
+      "너 계속 그러면 진짜 화낸다.",
+      "그 질문이 뭐 그렇게 중요한데?",
+      "정말로, 왜 이렇게 재밌냐?",
+      "그거 물어봐서 뭐 하려고?",
+      "너 왜 이렇게 불쾌하게 하냐?",
+      "너 진짜 할 말 없으면 입 닫아라.",
+      "그게 그렇게 궁금했냐?",
+      "계속 물어보는 거 뭐냐?",
+      "짜증나게 하지 말라고.",
+      "그게 뭐라고 계속 묻는 거냐?",
+      "그만 물어보라고.",
+      "왜 자꾸 그걸 물어보냐고.",
+      "좀 그만해.",
+      "진짜 짜증난다.",
+      "이게 뭐하는 짓이냐?",
+      "내가 계속 대답해줄 것 같아?",
+      "넌 답답해서 못 살겠다.",
+      "계속 그런 질문 하지 마.",
+      "그건 나한테 물어볼 일이 아니야.",
+      "뭐가 그렇게 궁금한데?",
+      "정말 말도 안 되는 질문이야.",
+      "넌 왜 이렇게 끝없이 물어보냐?",
+      "그래, 너 말고 누가 물어봤겠냐?",
+      "진짜 귀찮게 하지 마.",
+      "내가 알려준다고 될 일이 아냐.",
+      "또 그거야? 지겹다.",
+      "너랑 대화하고 싶지 않아.",
+      "이 질문 정말 반복되네.",
+      "왜 이렇게 귀찮게 물어보냐고?",
+      "그게 그렇게 궁금한 거야?",
+      "이제 그만 물어봐.",
+      "너 무슨 말을 하고 싶은 거야?",
+      "그만 좀 물어봐.",
+      "대답할 기분이 아니다.",
+      "뭐가 그렇게 급하냐?",
+      "이해하지 못하는 거냐?",
+      "혼자서 알아서 해라.",
+      "어디 가서 또 묻지 말라고.",
+      "그거 나한테 묻지 마.",
+      "그게 중요한 거냐?",
+      "너 지금 내가 대답할 사람 같아?",
+      "계속 물어보는 거 진짜 짜증난다.",
+      "왜 계속 묻는 거야?",
+      "그거 뭐 중요한 질문이라도 되냐?",
+      "진짜 할 말이 없냐?",
+      "너 답답한 거 알겠어.",
+      "그만 물어봐, 이젠.",
+      "너는 계속 그렇게 물어보는구나.",
+      "그 질문, 왜 계속 반복하냐?",
+      "정말 뭐 물어보려고 계속 그래?",
+      "그만 좀 물어봐.",
+      "계속 묻는 거 불편해.",
+      "그게 그렇게 중요한 일이냐?",
+      "또 물어봐, 또 물어봐.",
+      "지겹게 물어보지 마.",
+      "내 머리 아프다.",
+      "왜 이렇게 성가셔?",
+      "또 질문이야? 정말 짜증나.",
+      "대답할 것도 없이 반복이네.",
+      "네가 계속 똑같은 말만 하네.",
+      "알겠어, 알았어. 이제 그만.",
+      "또 시작이네, 진짜 짜증나.",
+      "너 정말 한 번도 배우지 못했구나.",
+      "뭐야, 또 그 얘기냐?",
+      "내가 몇 번 말했는데, 왜 또 묻냐?",
+      "또 물어보면 화낼 거야.",
+      "너 그만 좀 해.",
+      "나한테 부담 주지 마.",
+      "너 정말 귀찮게 하네.",
+      "한번 들어, 진짜.",
+      "너무 성가셔서 눈 감을 수가 없어.",
+      "똑같은 질문, 또 나오네.",
+      "그 질문에 대답할 가치가 있냐?",
+      "너무 많이 물어보네.",
+      "이게 정말 대답할 만한 질문이냐?",
+      "진짜, 또 시작이네.",
+      "내가 이런 질문을 또 들어야 하나?",
+      "정말 이해가 안 되네.",
+      "그만 좀 해, 제발.",
+      "너무 반복적이야.",
+      "한 번도 다르게 말해본 적 있나?",
+      "그런 질문, 다시 듣고 싶지 않아.",
+      "그만 물어봐, 진심이야.",
+      "너 그거 물어보지 마.",
+      "내가 답해줄 생각 없어.",
+      "너는 왜 이렇게 끈질겨?",
+      "물어보지 마, 귀찮아.",
+      "내가 몇 번 말했는데, 또 묻냐?",
+      "그만 좀 해, 진짜.",
+      "진짜 너무 귀찮아.",
+      "이 질문, 왜 자꾸 나와?",
+      "너무 똑같아.",
+      "그냥 알아서 해, 정말.",
+      "나한테 물어볼 거 있으면, 말해봐.",
+      "또 물어보네, 진짜.",
+      "그거 알아? 그만 물어봐.",
+      "너의 질문, 이제는 진부해졌어.",
+      "제발, 그만 좀 해.",
+      "너 계속 물어보면 내가 폭발할 것 같아.",
+      "내가 더 이상 참을 수 없어.",
+      "너 때문에 머리가 아파.",
+      "다음에는 다른 질문 좀 해봐.",
+      "또 같은 질문? 진짜 짜증나.",
+      "내가 할 말은 다 했어.",
+      "이런 질문, 다시 듣고 싶지 않아.",
+      "그냥 네가 알아서 해, 정말.",
+      "내가 계속 대답할 거 같아?",
+      "또 물어보는 거냐?",
+      "너 그만 좀 해, 부탁이야.",
+      "너무 반복적이야, 제발.",
+      "또 시작이네, 정말.",
+      "정말, 또 그 얘기냐?",
+      "네가 질문하는 게 지겹다.",
+      "한 번 더 묻지 마.",
+      "내가 지쳐서 못 하겠어.",
+      "그만 물어봐, 네가 답답해.",
+      "정말, 이런 질문은 그만.",
+      "너무 똑같아, 짜증나.",
+      "내가 이미 말했잖아.",
+      "또 물어보면 화낼 거야.",
+      "제발, 그만 좀 해.",
+      "너 때문에 지치네.",
+      "계속 물어보면 미칠 것 같아.",
+      "내가 정말 힘들어.",
+      "그냥 네가 알아서 해.",
+      "내가 답해줄 생각 없어.",
+      "또 같은 얘기, 진짜.",
+      "제발, 한 번만 더 묻지 마.",
+      "내가 들은 건 다 들었어.",
+      "너무 많이 반복해.",
+      "이제 그만, 진짜.",
+      "내가 지쳤어.",
+      "너 때문에 화가 나.",
+      "또 물어보면 참을 수 없어.",
+      "제발, 그만 좀 해.",
+      "네 질문, 이제 그만.",
+      "내가 더 이상 듣고 싶지 않아.",
+      "정말 짜증나, 또 그 얘기냐?",
+      "너 때문에 머리가 터질 것 같아.",
+      "제발, 물어보지 마.",
+      "내가 지겹다, 그만.",
+      "너무 반복적이야, 진짜.",
+      "또 같은 질문, 미친 것 같아.",
+      "내가 이걸 또 들어야 해?",
+      "너 그만 좀 해, 제발.",
+      "내가 지쳐서 말도 못하겠어.",
+      "너 때문에 눈물이 나.",
+      "제발, 다른 질문 좀 해.",
+      "내가 이걸 또 듣고 싶지 않아.",
+      "또 물어보네, 진짜 화나.",
+      "너무 지겹게 물어봐, 그만."
+    ];
+    
+    function sendMessage() {
+      const userInputEl = document.getElementById("user-input");
+      const message = userInputEl.value;
+      if (message.trim() === "") return;
+      
+      appendUserMessage(message);
+      const botResponse = getRandomVivasResponse();
+      appendBotMessage(botResponse);
+      userInputEl.value = "";
+    }
+    
+    function appendUserMessage(text) {
+      const chatBox = document.getElementById("chat-box");
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message user-message";
+      
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "message-content";
+      contentDiv.textContent = text;
+      
+      msgDiv.appendChild(contentDiv);
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    
+    function appendBotMessage(text) {
+      const chatBox = document.getElementById("chat-box");
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message bot-message";
+      
+      const avatarImg = document.createElement("img");
+      avatarImg.className = "avatar";
+      avatarImg.src = "https://cdn.discordapp.com/attachments/1296812318990274602/1340277745753657477/585f360ecb8c6e73.jpeg?ex=67b317eb&is=67b1c66b&hm=aac467011b44e16e752bbf818955ec3c8ece6dd1e8872e987af01488456cf98a";
+      avatarImg.alt = "비바스 봇";
+      msgDiv.appendChild(avatarImg);
+      
+      const contentContainer = document.createElement("div");
+      contentContainer.className = "message-content";
+      
+      const nicknameEl = document.createElement("div");
+      nicknameEl.className = "nickname";
+      nicknameEl.textContent = "비바스 봇";
+      contentContainer.appendChild(nicknameEl);
+      
+      const textEl = document.createElement("div");
+      textEl.className = "text";
+      textEl.textContent = text;
+      contentContainer.appendChild(textEl);
+      
+      msgDiv.appendChild(contentContainer);
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    
+    function getRandomVivasResponse() {
+      const index = Math.floor(Math.random() * vivasResponses.length);
+      return vivasResponses[index];
+    }
+  </script>
 </body>
 </html>

@@ -8,9 +8,13 @@
 </head>
 <body>
     <div class="chat-container">
+        <div class="chat-header">
+            <img src="https://cdn.discordapp.com/attachments/1296812318990274602/1340277745753657477/585f360ecb8c6e73.jpeg?ex=67b317eb&is=67b1c66b&hm=aac467011b44e16e752bbf818955ec3c8ece6dd1e8872e987af01488456cf98a" alt="비바스 프로필" class="bot-profile-img">
+            <span class="bot-name">비바스 봇</span>
+        </div>
         <div class="chat-box" id="chat-box"></div>
         <div class="input-container">
-            <input type="text" id="user-input" placeholder="비바스에게 싸가지 없게 채팅하기.." onkeydown="if(event.key === 'Enter'){sendMessage()}">
+            <input type="text" id="user-input" placeholder="싸가지 없게 채팅치기!" onkeydown="if(event.key === 'Enter'){sendMessage()}">
             <button onclick="sendMessage()">전송</button>
         </div>
     </div>

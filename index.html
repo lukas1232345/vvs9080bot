@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>비바스 챗봇</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>비바스 챗봇</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <img src="https://cdn.discordapp.com/attachments/1296812318990274602/1340277745753657477/585f360ecb8c6e73.jpeg?ex=67b317eb&is=67b1c66b&hm=aac467011b44e16e752bbf818955ec3c8ece6dd1e8872e987af01488456cf98a" alt="비바스 프로필" class="bot-profile-img">
-            <span class="bot-name">비바스 봇</span>
-        </div>
-        <div class="chat-box" id="chat-box"></div>
-        <div class="input-container">
-            <input type="text" id="user-input" placeholder="싸가지 없게 채팅치기!" onkeydown="if(event.key === 'Enter'){sendMessage()}">
-            <button onclick="sendMessage()">전송</button>
-        </div>
+  <div class="chat-container">
+    <div class="chat-box" id="chat-box"></div>
+    <div class="input-container">
+      <input
+        type="text"
+        id="user-input"
+        placeholder="그만 물어봐 제발..."
+        onkeydown="if(event.key === 'Enter'){sendMessage()}"
+      />
+      <button onclick="sendMessage()">전송</button>
     </div>
-    <script src="script.js"></script>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
